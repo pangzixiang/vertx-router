@@ -1,6 +1,7 @@
 package io.github.pangzixiang.whatsit.vertx.router.options;
 
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.RoutingContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,4 +28,10 @@ public class VertxRouterVerticleOptions {
     @Builder.Default
     private boolean enableCustomAuthentication = false;
     private List<Handler<RoutingContext>> customAuthenticationHandlers;
+    @Builder.Default
+    private HttpServerOptions listenerServerOptions = new HttpServerOptions();
+    @Builder.Default
+    private HttpServerOptions proxyServerOptions = new HttpServerOptions();
+    @Builder.Default
+    private int proxyServerInstanceNumber = 2;
 }

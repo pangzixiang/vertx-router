@@ -46,12 +46,9 @@ public class ListenerWebsocketHandler implements Handler<RoutingContext> {
             serverWebSocket.closeHandler(unused -> {
                 TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
                 if (targetService != null) {
-                    Map<String, ProxyHandler> maps = targetService.getProxyHandlers();
-                    maps.remove(connectionId);
-                    targetService.setProxyHandlers(maps);
-                    vertx.sharedData().getLocalMap(CONNECTION_MAP).put(serviceName, targetService);
                     log.info("Connection [{}] closed, remove proxy for service [{}] to target server [{}:{}]",
                             connectionId, serviceName, targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId));
+                    vertx.sharedData().getLocalMap(CONNECTION_MAP).put(serviceName, targetService.remove(connectionId));
                 }
             });
 

@@ -36,6 +36,7 @@
         <janino.version>3.1.9</janino.version>
         <slf4j.version>2.0.6</slf4j.version>
         <lombok.version>1.18.26</lombok.version>
+        <jackson.version>2.15.0</jackson.version>
         <maven-scm-plugin.version>1.12.0</maven-scm-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
@@ -73,6 +74,11 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-proxy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
