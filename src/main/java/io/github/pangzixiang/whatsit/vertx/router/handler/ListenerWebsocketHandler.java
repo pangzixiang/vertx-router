@@ -25,6 +25,10 @@ public class ListenerWebsocketHandler implements Handler<RoutingContext> {
 
     private final Vertx vertx;
 
+    private static final String LISTENER_REGISTER_CONNECTION_REGISTER_LOCK_NAME = "vertx-router-register-connection-lock-" + UUID.randomUUID();
+
+    private static final String LISTENER_REGISTER_CONNECTION_REMOVE_LOCK_NAME = "vertx-router-remove-connection-lock-" + UUID.randomUUID();
+
     @Override
     public void handle(RoutingContext routingContext) {
         HttpClient proxyClient = vertx.createHttpClient();
@@ -44,34 +48,39 @@ public class ListenerWebsocketHandler implements Handler<RoutingContext> {
             }
 
             serverWebSocket.closeHandler(unused -> {
-                TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
-                if (targetService != null) {
-                    log.info("Connection [{}] closed, remove proxy for service [{}] to target server [{}:{}]",
-                            connectionId, serviceName, targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId));
-                    vertx.sharedData().getLocalMap(CONNECTION_MAP).put(serviceName, targetService.remove(connectionId));
-                }
+                vertx.sharedData().getLock(LISTENER_REGISTER_CONNECTION_REMOVE_LOCK_NAME).onSuccess(lock -> {
+                    TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
+                    if (targetService != null) {
+                        log.info("Connection [{}] closed, remove proxy for service [{}] to target server [{}:{}]",
+                                connectionId, serviceName, host, port);
+                        vertx.sharedData().getLocalMap(CONNECTION_MAP).put(serviceName, targetService.remove(connectionId));
+                    }
+                    lock.release();
+                }).onFailure(throwable -> {
+                    log.error("Unable to remove connection [{}] for proxy service [{}] to target server [{}:{}] as failed to get register lock",
+                            connectionId, serviceName, host, port, throwable);
+                });
             });
 
             if (StringUtils.isNoneEmpty(host, serviceName)) {
                 HttpProxy httpProxy = HttpProxy.reverseProxy(proxyClient);
                 httpProxy.origin(port, host);
                 ProxyHandler proxyHandler = ProxyHandler.create(httpProxy);
-                TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
-                if (targetService == null) {
-                    targetService = new TargetService().add(connectionId, host, port, proxyHandler);
-                } else {
+                vertx.sharedData().getLock(LISTENER_REGISTER_CONNECTION_REGISTER_LOCK_NAME).onSuccess(lock -> {
+                    TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).getOrDefault(serviceName, new TargetService());
                     targetService.add(connectionId, host, port, proxyHandler);
-                }
-                vertx.sharedData().getLocalMap(CONNECTION_MAP).put(serviceName, targetService);
-                log.info("Connection [{}] established, added proxy for service [{}] to target server [{}:{}]",
-                        connectionId, serviceName, host, port);
+                    vertx.sharedData().getLocalMap(CONNECTION_MAP).put(serviceName, targetService);
+                    log.info("Connection [{}] established, added proxy for service [{}] to target server [{}:{}]",
+                            connectionId, serviceName, host, port);
+                    lock.release();
+                }).onFailure(throwable -> {
+                    log.error("Unable to register connection [{}] for proxy service [{}] to target server [{}:{}] as failed to get register lock",
+                            connectionId, serviceName, host, port, throwable);
+                    serverWebSocket.close();
+                });
             } else {
                 serverWebSocket.close();
-                return;
             }
-            serverWebSocket.handler(buffer -> {
-                log.info("Connection {} received message {}", connectionId, buffer);
-            });
         }).onFailure(throwable -> {
             routingContext.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
         });

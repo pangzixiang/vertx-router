@@ -15,7 +15,7 @@ public class VertxRouterVerticle extends AbstractVerticle {
     public static final String CONNECTION_MAP = "vertx-router-connection-map-" + UUID.randomUUID();
 
     public VertxRouterVerticle() {
-        this.vertxRouterVerticleOptions = new VertxRouterVerticleOptions();
+        this(new VertxRouterVerticleOptions());
     }
 
     public VertxRouterVerticle(VertxRouterVerticleOptions vertxRouterVerticleOptions) {
@@ -29,7 +29,7 @@ public class VertxRouterVerticle extends AbstractVerticle {
                 .setConfig(JsonObject.mapFrom(vertxRouterVerticleOptions)).setInstances(vertxRouterVerticleOptions.getProxyServerInstanceNumber()));
 
         Future<String> deployListenerServerFuture = getVertx().deployVerticle(ListenerServerVerticle.class, new DeploymentOptions()
-                .setConfig(JsonObject.mapFrom(vertxRouterVerticleOptions)));
+                .setConfig(JsonObject.mapFrom(vertxRouterVerticleOptions)).setInstances(vertxRouterVerticleOptions.getListenerServerInstanceNumber()));
 
 
         deployProxyServerFuture.compose(unused -> deployListenerServerFuture)

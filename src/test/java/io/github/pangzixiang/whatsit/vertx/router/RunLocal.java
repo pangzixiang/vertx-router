@@ -18,6 +18,8 @@ public class RunLocal {
         vertx.deployVerticle(new VertxRouterVerticle(VertxRouterVerticleOptions.builder()
                 .proxyServerPort(8080)
                 .listenerServerPort(9090)
+                .proxyServerInstanceNumber(4)
+                .listenerServerInstanceNumber(4)
                 .enableBasicAuthentication(true)
                 .basicAuthenticationUsername("vertx-router")
                 .basicAuthenticationPassword("vertx-router-pwd").build())).onSuccess(unused -> {
@@ -62,7 +64,7 @@ public class RunLocal {
                         webSocketConnectOptions1.setHeaders(headers1);
                         httpClient1.webSocket(webSocketConnectOptions1).onSuccess(unused2 -> {
                             log.info("Target Service1 connected to Proxy service");
-//                            vertx.setTimer(5000, l -> httpClient1.close());
+                            vertx.setTimer(10000, l -> httpClient1.close());
                         }).onFailure(throwable -> {
                             log.error("Target Service1 failed to connect to Proxy Service", throwable);
                         });
@@ -81,7 +83,7 @@ public class RunLocal {
                         webSocketConnectOptions2.setHeaders(headers2);
                         httpClient2.webSocket(webSocketConnectOptions2).onSuccess(unused2 -> {
                             log.info("Target Service2 connected to Proxy service");
-//                            vertx.setTimer(10000, l -> httpClient2.close());
+                            vertx.setTimer(15000, l -> httpClient2.close());
                         }).onFailure(throwable -> {
                             log.error("Target Service2 failed to connect to Proxy Service", throwable);
                         });

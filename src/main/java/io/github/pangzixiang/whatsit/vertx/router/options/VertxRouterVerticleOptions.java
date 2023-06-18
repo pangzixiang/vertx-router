@@ -34,4 +34,6 @@ public class VertxRouterVerticleOptions {
     private HttpServerOptions proxyServerOptions = new HttpServerOptions();
     @Builder.Default
     private int proxyServerInstanceNumber = 2;
+    @Builder.Default
+    private int listenerServerInstanceNumber = 2;
 }
