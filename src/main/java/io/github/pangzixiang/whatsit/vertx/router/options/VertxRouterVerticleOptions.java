@@ -1,6 +1,7 @@
 package io.github.pangzixiang.whatsit.vertx.router.options;
 
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.RoutingContext;
 import lombok.AllArgsConstructor;
@@ -36,4 +37,5 @@ public class VertxRouterVerticleOptions {
     private int proxyServerInstanceNumber = 2;
     @Builder.Default
     private int listenerServerInstanceNumber = 2;
+    private HttpClientOptions proxyHttpClientOptions;
 }

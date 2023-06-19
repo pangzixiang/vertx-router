@@ -32,21 +32,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <vertx.version>4.4.3</vertx.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
-        <logback.version>1.4.5</logback.version>
+        <logback.version>1.4.8</logback.version>
         <janino.version>3.1.9</janino.version>
-        <slf4j.version>2.0.6</slf4j.version>
-        <lombok.version>1.18.26</lombok.version>
-        <jackson.version>2.15.0</jackson.version>
-        <maven-scm-plugin.version>1.12.0</maven-scm-plugin.version>
-        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+        <slf4j.version>2.0.7</slf4j.version>
+        <lombok.version>1.18.28</lombok.version>
+        <jackson.version>2.15.2</jackson.version>
+        <maven-scm-plugin.version>2.0.1</maven-scm-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
-        <maven-release-plugin.version>3.0.0-M6</maven-release-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
+        <versions-maven-plugin.version>2.16.0</versions-maven-plugin.version>
+        <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
-        <maven-javadoc-plugin>3.4.1</maven-javadoc-plugin>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
+        <maven-javadoc-plugin>3.5.0</maven-javadoc-plugin>
+        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -172,7 +172,7 @@
             <plugin>
                 <groupId>com.github.danielflower.mavenplugins</groupId>
                 <artifactId>multi-module-maven-release-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.4</version>
                 <configuration>
                     <serverId>github</serverId>
                 </configuration>

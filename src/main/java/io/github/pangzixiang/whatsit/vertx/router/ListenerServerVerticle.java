@@ -16,8 +16,11 @@ import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.UUID;
+
 @Slf4j
 public class ListenerServerVerticle extends AbstractVerticle {
+    private final String instanceId = UUID.randomUUID().toString();
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         VertxRouterVerticleOptions vertxRouterVerticleOptions = config().mapTo(VertxRouterVerticleOptions.class);
@@ -35,7 +38,7 @@ public class ListenerServerVerticle extends AbstractVerticle {
             vertxRouterVerticleOptions.getCustomAuthenticationHandlers().forEach(registerRoute::handler);
         }
 
-        registerRoute.handler(new ListenerWebsocketHandler(getVertx()));
+        registerRoute.handler(new ListenerWebsocketHandler(getVertx(), vertxRouterVerticleOptions, instanceId));
 
         listenerRouter.errorHandler(HttpResponseStatus.UNAUTHORIZED.code(), routingContext -> {
             routingContext.response().setStatusCode(HttpResponseStatus.UNAUTHORIZED.code()).end();
@@ -53,7 +56,7 @@ public class ListenerServerVerticle extends AbstractVerticle {
         listenerServer.requestHandler(listenerRouter);
         Future<HttpServer> listenerServerFuture = listenerServer.listen(vertxRouterVerticleOptions.getListenerServerPort());
         listenerServerFuture.onSuccess(httpServer -> {
-            log.info("Vertx Router Listener Server started at port {}", httpServer.actualPort());
+            log.info("Vertx Router Listener Server started at port {} (instance={})", httpServer.actualPort(), instanceId);
             startPromise.complete();
         }).onFailure(startPromise::fail);
     }

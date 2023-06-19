@@ -17,7 +17,7 @@ import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.CON
 @AllArgsConstructor
 public class ProxyServerHandler implements Handler<RoutingContext> {
     private final Vertx vertx;
-
+    private final String instanceId;
     @Override
     public void handle(RoutingContext routingContext) {
         String serviceName = routingContext.pathParam("serviceName");
@@ -35,14 +35,20 @@ public class ProxyServerHandler implements Handler<RoutingContext> {
         int random = Math.floorMod(System.currentTimeMillis(), proxyHandlers.size());
         ProxyHandler proxyHandler = proxyHandlers.values().stream().toList().get(random);
         String connectionId = proxyHandlers.keySet().stream().toList().get(random);
-        log.info("Start to proxy request [{}] from [{}] to [{}:{}]", routingContext.normalizedPath(), routingContext.request().host(), targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId));
+        log.info("Start to proxy request [{}] from [{}] to [{}:{}] (instance={})",
+                routingContext.normalizedPath(), routingContext.request().host(),
+                targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId), instanceId);
         routingContext.addEndHandler(result -> {
             if (result.succeeded()) {
-                log.info("Succeeded to proxy request [{}] from [{}] to [{}:{}] (time={}ms)",
-                        routingContext.normalizedPath(), routingContext.request().host(), targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId), System.currentTimeMillis() - startTime);
+                log.info("Succeeded to proxy request [{}] from [{}] to [{}:{}] (time={}ms)(instance={})",
+                        routingContext.normalizedPath(), routingContext.request().host(),
+                        targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId),
+                        System.currentTimeMillis() - startTime, instanceId);
             } else {
-                log.error("Failed to proxy request [{}] from [{}] to [{}:{}] (time={}ms)",
-                        routingContext.normalizedPath(), routingContext.request().host(), targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId), System.currentTimeMillis() - startTime, result.cause());
+                log.error("Failed to proxy request [{}] from [{}] to [{}:{}] (time={}ms)(instance={})",
+                        routingContext.normalizedPath(), routingContext.request().host(),
+                        targetService.getHosts().get(connectionId), targetService.getPorts().get(connectionId),
+                        System.currentTimeMillis() - startTime, instanceId, result.cause());
             }
         });
         proxyHandler.handle(routingContext);

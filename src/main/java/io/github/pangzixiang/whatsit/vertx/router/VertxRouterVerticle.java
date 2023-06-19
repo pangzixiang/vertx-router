@@ -26,10 +26,12 @@ public class VertxRouterVerticle extends AbstractVerticle {
     public void start(Promise<Void> startPromise) throws Exception {
 
         Future<String> deployProxyServerFuture = getVertx().deployVerticle(ProxyServerVerticle.class, new DeploymentOptions()
-                .setConfig(JsonObject.mapFrom(vertxRouterVerticleOptions)).setInstances(vertxRouterVerticleOptions.getProxyServerInstanceNumber()));
+                .setConfig(JsonObject.mapFrom(vertxRouterVerticleOptions))
+                .setInstances(vertxRouterVerticleOptions.getProxyServerInstanceNumber()));
 
         Future<String> deployListenerServerFuture = getVertx().deployVerticle(ListenerServerVerticle.class, new DeploymentOptions()
-                .setConfig(JsonObject.mapFrom(vertxRouterVerticleOptions)).setInstances(vertxRouterVerticleOptions.getListenerServerInstanceNumber()));
+                .setConfig(JsonObject.mapFrom(vertxRouterVerticleOptions))
+                .setInstances(vertxRouterVerticleOptions.getListenerServerInstanceNumber()));
 
 
         deployProxyServerFuture.compose(unused -> deployListenerServerFuture)
