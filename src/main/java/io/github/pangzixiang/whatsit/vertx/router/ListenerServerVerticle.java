@@ -18,12 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
+import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.VERTX_ROUTER_OPTIONS_KEY_NAME;
+import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.VERTX_ROUTER_SHARE_MAP_NAME;
+
 @Slf4j
 public class ListenerServerVerticle extends AbstractVerticle {
     private final String instanceId = UUID.randomUUID().toString();
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
-        VertxRouterVerticleOptions vertxRouterVerticleOptions = config().mapTo(VertxRouterVerticleOptions.class);
+        VertxRouterVerticleOptions vertxRouterVerticleOptions = (VertxRouterVerticleOptions)
+                getVertx().sharedData().getLocalMap(VERTX_ROUTER_SHARE_MAP_NAME).get(VERTX_ROUTER_OPTIONS_KEY_NAME);
+
         Router listenerRouter = Router.router(getVertx());
         Route registerRoute = listenerRouter.route(vertxRouterVerticleOptions.getRegisterPath());
 
@@ -38,7 +43,7 @@ public class ListenerServerVerticle extends AbstractVerticle {
             vertxRouterVerticleOptions.getCustomAuthenticationHandlers().forEach(registerRoute::handler);
         }
 
-        registerRoute.handler(new ListenerWebsocketHandler(getVertx(), vertxRouterVerticleOptions, instanceId));
+        registerRoute.handler(new ListenerWebsocketHandler(getVertx(), instanceId));
 
         listenerRouter.errorHandler(HttpResponseStatus.UNAUTHORIZED.code(), routingContext -> {
             routingContext.response().setStatusCode(HttpResponseStatus.UNAUTHORIZED.code()).end();

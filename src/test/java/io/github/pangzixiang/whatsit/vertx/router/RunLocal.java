@@ -4,26 +4,29 @@ import io.github.pangzixiang.whatsit.vertx.router.options.VertxRouterVerticleOpt
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.WebSocketConnectOptions;
+import io.vertx.core.http.*;
+import io.vertx.core.net.SelfSignedCertificate;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RunLocal {
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
-
+        SelfSignedCertificate selfSignedCertificate = SelfSignedCertificate.create();
         vertx.deployVerticle(new VertxRouterVerticle(VertxRouterVerticleOptions.builder()
                 .proxyServerPort(8080)
                 .listenerServerPort(9090)
                 .proxyServerInstanceNumber(4)
+                .listenerServerOptions(new HttpServerOptions().setSsl(true).setKeyCertOptions(selfSignedCertificate.keyCertOptions()).setTrustOptions(selfSignedCertificate.trustOptions()))
+                .proxyServerOptions(new HttpServerOptions().setSsl(true).setKeyCertOptions(selfSignedCertificate.keyCertOptions()).setTrustOptions(selfSignedCertificate.trustOptions()))
                 .listenerServerInstanceNumber(4)
                 .enableBasicAuthentication(true)
                 .basicAuthenticationUsername("vertx-router")
                 .basicAuthenticationPassword("vertx-router-pwd").build())).onSuccess(unused -> {
             Router router1 = Router.router(vertx);
+            router1.route().handler(BodyHandler.create());
             router1.route().handler(routingContext -> {
                 log.info("target service 1 received request from {}", routingContext.normalizedPath());
                 routingContext.next();
@@ -31,18 +34,22 @@ public class RunLocal {
             router1.route("/test-service/test").handler(routingContext -> {
                 routingContext.response().end("done");
             });
+            router1.route(HttpMethod.POST, "/test-service/test1").handler(routingContext -> {
+                routingContext.response().end(routingContext.body().asString());
+            });
 
             Future<HttpServer> httpServerFuture1 = vertx.createHttpServer()
                     .requestHandler(router1)
                     .listen(0);
 
             Router router2 = Router.router(vertx);
+            router2.route().handler(BodyHandler.create());
             router2.route().handler(routingContext -> {
                 log.info("target service 2 received request from {}", routingContext.normalizedPath());
                 routingContext.next();
             });
-            router2.route("/test-service/test").handler(routingContext -> {
-                routingContext.response().end("done");
+            router2.route(HttpMethod.POST,"/test-service/test1").handler(routingContext -> {
+                routingContext.response().end(routingContext.body().asString());
             });
             Future<HttpServer> httpServerFuture2 = vertx.createHttpServer()
                     .requestHandler(router2)
@@ -51,10 +58,14 @@ public class RunLocal {
             Future.all(httpServerFuture1, httpServerFuture2)
                     .onSuccess(unused1 -> {
                         log.info("Target service started at {}", httpServerFuture1.result().actualPort());
-                        HttpClient httpClient1 = vertx.createHttpClient();
+                        HttpClientOptions options = new HttpClientOptions();
+                        options.setSsl(true);
+                        options.setTrustAll(true);
+                        HttpClient httpClient1 = vertx.createHttpClient(options);
                         WebSocketConnectOptions webSocketConnectOptions1 = new WebSocketConnectOptions();
                         webSocketConnectOptions1.setHost("localhost");
                         webSocketConnectOptions1.setPort(9090);
+                        webSocketConnectOptions1.setSsl(true);
                         webSocketConnectOptions1.setURI("/register");
                         MultiMap headers1 = MultiMap.caseInsensitiveMultiMap();
                         headers1.add("host", "localhost");
@@ -70,10 +81,11 @@ public class RunLocal {
                         });
 
 
-                        HttpClient httpClient2= vertx.createHttpClient();
+                        HttpClient httpClient2= vertx.createHttpClient(options);
                         WebSocketConnectOptions webSocketConnectOptions2 = new WebSocketConnectOptions();
                         webSocketConnectOptions2.setHost("localhost");
                         webSocketConnectOptions2.setPort(9090);
+                        webSocketConnectOptions2.setSsl(true);
                         webSocketConnectOptions2.setURI("/register");
                         MultiMap headers2 = MultiMap.caseInsensitiveMultiMap();
                         headers2.add("host", "localhost");

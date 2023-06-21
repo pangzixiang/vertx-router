@@ -3,6 +3,7 @@ package io.github.pangzixiang.whatsit.vertx.router.options;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.web.RoutingContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-public class VertxRouterVerticleOptions {
+public class VertxRouterVerticleOptions implements Shareable {
     @Builder.Default
     private String registerPath = "/register";
     @Builder.Default
