@@ -15,12 +15,14 @@ public class RunLocal {
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
         SelfSignedCertificate selfSignedCertificate = SelfSignedCertificate.create();
+        HttpServerOptions sslOptions = new HttpServerOptions().setSsl(true).setKeyCertOptions(selfSignedCertificate.keyCertOptions()).setTrustOptions(selfSignedCertificate.trustOptions());
         vertx.deployVerticle(new VertxRouterVerticle(VertxRouterVerticleOptions.builder()
                 .proxyServerPort(8080)
                 .listenerServerPort(9090)
                 .proxyServerInstanceNumber(4)
-                .listenerServerOptions(new HttpServerOptions().setSsl(true).setKeyCertOptions(selfSignedCertificate.keyCertOptions()).setTrustOptions(selfSignedCertificate.trustOptions()))
-                .proxyServerOptions(new HttpServerOptions().setSsl(true).setKeyCertOptions(selfSignedCertificate.keyCertOptions()).setTrustOptions(selfSignedCertificate.trustOptions()))
+                .listenerServerOptions(sslOptions)
+                .proxyServerOptions(sslOptions)
+                .proxyHttpClientOptions(new HttpClientOptions().setSsl(true).setTrustAll(true))
                 .listenerServerInstanceNumber(4)
                 .enableBasicAuthentication(true)
                 .basicAuthenticationUsername("vertx-router")
@@ -38,7 +40,7 @@ public class RunLocal {
                 routingContext.response().end(routingContext.body().asString());
             });
 
-            Future<HttpServer> httpServerFuture1 = vertx.createHttpServer()
+            Future<HttpServer> httpServerFuture1 = vertx.createHttpServer(sslOptions)
                     .requestHandler(router1)
                     .listen(0);
 
@@ -51,7 +53,7 @@ public class RunLocal {
             router2.route(HttpMethod.POST,"/test-service/test1").handler(routingContext -> {
                 routingContext.response().end(routingContext.body().asString());
             });
-            Future<HttpServer> httpServerFuture2 = vertx.createHttpServer()
+            Future<HttpServer> httpServerFuture2 = vertx.createHttpServer(sslOptions)
                     .requestHandler(router2)
                     .listen(0);
 

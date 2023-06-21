@@ -45,12 +45,12 @@ public class ProxyServerVerticle extends AbstractVerticle {
             String serviceName = httpServerRequest.params().get("serviceName");
             TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
             if (targetService == null) {
-                log.info("target service [{}] not found for URI [{}]", serviceName, httpServerRequest.uri());
+                log.info("target service [{}] not found for URI [{} {}]", serviceName, httpServerRequest.method(), httpServerRequest.uri());
                 return Future.failedFuture(new TargetServerNotFoundException(serviceName));
             }
             Map<String, SocketAddress> socketAddressMap = targetService.getSocketAddressMap();
             if (socketAddressMap.isEmpty()) {
-                log.info("target service [{}] not found for URI [{}]", serviceName, httpServerRequest.uri());
+                log.info("target service [{}] not found for URI [{} {}]", serviceName, httpServerRequest.method(), httpServerRequest.uri());
                 return Future.failedFuture(new TargetServerNotFoundException(serviceName));
             }
             int random = Math.floorMod(System.currentTimeMillis(), socketAddressMap.size());
