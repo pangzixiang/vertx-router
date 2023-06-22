@@ -1,5 +1,6 @@
 package io.github.pangzixiang.whatsit.vertx.router;
 
+import io.github.pangzixiang.whatsit.vertx.router.algorithm.LeastConnection;
 import io.github.pangzixiang.whatsit.vertx.router.options.VertxRouterVerticleOptions;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -25,6 +26,7 @@ public class RunLocal {
                 .proxyHttpClientOptions(new HttpClientOptions().setSsl(true).setTrustAll(true))
                 .listenerServerInstanceNumber(4)
                 .enableBasicAuthentication(true)
+                .loadBalanceAlgorithm(new LeastConnection())
                 .basicAuthenticationUsername("vertx-router")
                 .basicAuthenticationPassword("vertx-router-pwd").build())).onSuccess(unused -> {
             Router router1 = Router.router(vertx);

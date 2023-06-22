@@ -1,5 +1,6 @@
 package io.github.pangzixiang.whatsit.vertx.router;
 
+import io.github.pangzixiang.whatsit.vertx.router.algorithm.LoadBalanceAlgorithm;
 import io.github.pangzixiang.whatsit.vertx.router.exception.TargetServerNotFoundException;
 import io.github.pangzixiang.whatsit.vertx.router.model.TargetService;
 import io.github.pangzixiang.whatsit.vertx.router.options.VertxRouterVerticleOptions;
@@ -18,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.BiFunction;
 
 import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.*;
 
@@ -42,7 +42,12 @@ public class ProxyServerVerticle extends AbstractVerticle {
                 new HttpClientOptions().setMaxPoolSize(10).setPoolEventLoopSize(10)));
         HttpProxy httpProxy = HttpProxy.reverseProxy(proxyClient);
 
-        BiFunction<String, Map<String, SocketAddress>, Future<SocketAddress>> customOriginServerSelector = vertxRouterVerticleOptions.getCustomOriginServerSelector();
+        LoadBalanceAlgorithm loadBalanceAlgorithm = vertxRouterVerticleOptions.getLoadBalanceAlgorithm();
+        if (loadBalanceAlgorithm == null) {
+            String err = "Mandatory field LoadBalanceAlgorithm in VertxRouterVerticleOptions can't be null!";
+            startPromise.fail(err);
+            return;
+        }
         httpProxy.originSelector(httpServerRequest -> {
             String serviceName = httpServerRequest.params().get("serviceName");
             TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
@@ -55,14 +60,7 @@ public class ProxyServerVerticle extends AbstractVerticle {
                 log.info("target service [{}] not found for URI [{} {}]", serviceName, httpServerRequest.method(), httpServerRequest.uri());
                 return Future.failedFuture(new TargetServerNotFoundException(serviceName));
             }
-            Future<SocketAddress> socketAddressFuture;
-            if (customOriginServerSelector != null) {
-                socketAddressFuture = customOriginServerSelector.apply(serviceName, socketAddressMap);
-            } else {
-                socketAddressFuture = Future.succeededFuture(socketAddressMap.values().stream().toList().
-                        get(Math.floorMod(System.currentTimeMillis(), socketAddressMap.size())));
-            }
-
+            Future<SocketAddress> socketAddressFuture = loadBalanceAlgorithm.handle(getVertx(), httpServerRequest, socketAddressMap);
 
             return socketAddressFuture.onSuccess(socketAddress -> {
                 log.info("Proxy request [{} {}] from [{}] to [{}:{}] (instance={})", httpServerRequest.method(),

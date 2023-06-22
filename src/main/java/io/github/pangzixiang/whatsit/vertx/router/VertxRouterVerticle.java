@@ -31,11 +31,15 @@ public class VertxRouterVerticle extends AbstractVerticle {
         Future<String> deployProxyServerFuture = getVertx().deployVerticle(ProxyServerVerticle.class, new DeploymentOptions()
                 .setInstances(vertxRouterVerticleOptions.getProxyServerInstanceNumber()));
 
-        Future<String> deployListenerServerFuture = getVertx().deployVerticle(ListenerServerVerticle.class, new DeploymentOptions()
-                .setInstances(vertxRouterVerticleOptions.getListenerServerInstanceNumber()));
-
-        deployProxyServerFuture.compose(unused -> deployListenerServerFuture)
-                .onSuccess(unused -> startPromise.complete())
-                .onFailure(startPromise::fail);
+        deployProxyServerFuture.compose(unused -> getVertx().deployVerticle(ListenerServerVerticle.class, new DeploymentOptions()
+                        .setInstances(vertxRouterVerticleOptions.getListenerServerInstanceNumber())))
+                .onSuccess(unused -> {
+                    log.info("Succeeded to deploy vertx router verticle");
+                    startPromise.complete();
+                })
+                .onFailure(throwable -> {
+                    log.error("Failed to deploy vertx router verticle", throwable);
+                    startPromise.fail(throwable);
+                });
     }
 }

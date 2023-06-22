@@ -29,6 +29,35 @@ public class Main {
     }
 }
 ```
+- you can also set your preferred load balance algorithm
+```java
+public class Main {
+    public static void main(String[] args) {
+        vertx.deployVerticle(new VertxRouterVerticle(VertxRouterVerticleOptions.builder()
+                .loadBalanceAlgorithm(new LeastConnection())
+                .build()));
+    }
+}
+```
+By default, the load balance algorithm is Round Robin and this library provides below 3 kinds of Algorithm:
+1. LeastConnection.class
+2. RandomAlgorithm.class
+3. RoundRobin.class
+- you can also design your own load balance algorithm by implementing LoadBalanceAlgorithm.class
+
+```java
+import io.github.pangzixiang.whatsit.vertx.router.algorithm.LoadBalanceAlgorithm;
+
+public class YourAlgorithm implements LoadBalanceAlgorithm {
+    @Override
+    public Future<SocketAddress> handle(Vertx vertx, HttpServerRequest httpServerRequest, Map<String, SocketAddress> socketAddressMap) {
+        // try sth
+        return Future.succeededFuture(socketAddressMap.values().stream().toList().get(0));
+    }
+}
+```
+
+
 - Target Services use Websocket to register themselves
 ```java
 public class Main {
