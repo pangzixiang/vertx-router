@@ -32,7 +32,7 @@ public class RunLocal {
             Router router1 = Router.router(vertx);
             router1.route().handler(BodyHandler.create());
             router1.route().handler(routingContext -> {
-                log.info("target service 1 received request from {}", routingContext.normalizedPath());
+                log.info("target service 1 received request from {}, headers={}", routingContext.normalizedPath(), routingContext.request().headers());
                 routingContext.next();
             });
             router1.route("/test-service/test").handler(routingContext -> {
@@ -49,7 +49,7 @@ public class RunLocal {
             Router router2 = Router.router(vertx);
             router2.route().handler(BodyHandler.create());
             router2.route().handler(routingContext -> {
-                log.info("target service 2 received request from {}", routingContext.normalizedPath());
+                log.info("target service 2 received request from {}, headers={}", routingContext.normalizedPath(), routingContext.request().headers());
                 routingContext.next();
             });
             router2.route(HttpMethod.POST,"/test-service/test1").handler(routingContext -> {
@@ -79,7 +79,7 @@ public class RunLocal {
                         webSocketConnectOptions1.setHeaders(headers1);
                         httpClient1.webSocket(webSocketConnectOptions1).onSuccess(unused2 -> {
                             log.info("Target Service1 connected to Proxy service");
-                            vertx.setTimer(10000, l -> httpClient1.close());
+//                            vertx.setTimer(10000, l -> httpClient1.close());
                         }).onFailure(throwable -> {
                             log.error("Target Service1 failed to connect to Proxy Service", throwable);
                         });
@@ -99,7 +99,7 @@ public class RunLocal {
                         webSocketConnectOptions2.setHeaders(headers2);
                         httpClient2.webSocket(webSocketConnectOptions2).onSuccess(unused2 -> {
                             log.info("Target Service2 connected to Proxy service");
-                            vertx.setTimer(15000, l -> httpClient2.close());
+//                            vertx.setTimer(15000, l -> httpClient2.close());
                         }).onFailure(throwable -> {
                             log.error("Target Service2 failed to connect to Proxy Service", throwable);
                         });
