@@ -4,7 +4,6 @@ import io.github.pangzixiang.whatsit.vertx.router.handler.ListenerWebsocketHandl
 import io.github.pangzixiang.whatsit.vertx.router.options.VertxRouterVerticleOptions;
 import io.github.pangzixiang.whatsit.vertx.router.security.BasicAuthenticationProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
@@ -22,14 +21,15 @@ import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.VER
 import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.VERTX_ROUTER_SHARE_MAP_NAME;
 
 @Slf4j
-public class ListenerServerVerticle extends AbstractVerticle {
+public class ListenerServerVerticle extends BaseVerticle {
     private final String instanceId = UUID.randomUUID().toString();
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         VertxRouterVerticleOptions vertxRouterVerticleOptions = (VertxRouterVerticleOptions)
                 getVertx().sharedData().getLocalMap(VERTX_ROUTER_SHARE_MAP_NAME).get(VERTX_ROUTER_OPTIONS_KEY_NAME);
 
-        Router listenerRouter = Router.router(getVertx());
+        Router listenerRouter = createRouter(vertxRouterVerticleOptions);
+
         Route registerRoute = listenerRouter.route(vertxRouterVerticleOptions.getRegisterPath());
 
         if (!vertxRouterVerticleOptions.isEnableCustomAuthentication() && vertxRouterVerticleOptions.isEnableBasicAuthentication()) {

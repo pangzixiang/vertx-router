@@ -4,7 +4,6 @@ import io.github.pangzixiang.whatsit.vertx.router.algorithm.LoadBalanceAlgorithm
 import io.github.pangzixiang.whatsit.vertx.router.exception.TargetServerNotFoundException;
 import io.github.pangzixiang.whatsit.vertx.router.model.TargetService;
 import io.github.pangzixiang.whatsit.vertx.router.options.VertxRouterVerticleOptions;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.*;
@@ -21,7 +20,7 @@ import java.util.UUID;
 import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.*;
 
 @Slf4j
-public class ProxyServerVerticle extends AbstractVerticle {
+public class ProxyServerVerticle extends BaseVerticle {
     private final String instanceId = UUID.randomUUID().toString();
 
     private static final String PROXY_HEADERS_X_HANDLE_ID = "x-handle-id";
@@ -34,7 +33,7 @@ public class ProxyServerVerticle extends AbstractVerticle {
 
         HttpServer proxyServer = getVertx().createHttpServer(vertxRouterVerticleOptions.getProxyServerOptions());
 
-        Router proxyRouter = Router.router(getVertx());
+        Router proxyRouter = createRouter(vertxRouterVerticleOptions);
 
         HttpClient proxyClient = getVertx().createHttpClient(Objects.requireNonNullElse(vertxRouterVerticleOptions.getProxyHttpClientOptions(),
                 new HttpClientOptions().setMaxPoolSize(10).setPoolEventLoopSize(10)));

@@ -4,6 +4,7 @@ import io.github.pangzixiang.whatsit.vertx.router.algorithm.LoadBalanceAlgorithm
 import io.github.pangzixiang.whatsit.vertx.router.algorithm.RoundRobin;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.web.RoutingContext;
@@ -13,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -43,4 +45,8 @@ public class VertxRouterVerticleOptions implements Shareable {
     private HttpClientOptions proxyHttpClientOptions;
     @Builder.Default
     private LoadBalanceAlgorithm loadBalanceAlgorithm = new RoundRobin();
+    @Builder.Default
+    private boolean allowCORS = true;
+    private Set<String> allowCORSHeaders;
+    private Set<HttpMethod> allowCORSMethods;
 }
