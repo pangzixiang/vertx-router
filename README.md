@@ -43,6 +43,7 @@ By default, the load balance algorithm is Round Robin and this library provides 
 1. LeastConnection.class
 2. RandomAlgorithm.class
 3. RoundRobin.class
+4. IpHash.class
 - you can also design your own load balance algorithm by implementing LoadBalanceAlgorithm.class
 
 ```java
