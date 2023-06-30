@@ -28,8 +28,7 @@ public class VertxRouterVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         getVertx().sharedData().getLocalMap(VERTX_ROUTER_SHARE_MAP_NAME).putIfAbsent(VERTX_ROUTER_OPTIONS_KEY_NAME, vertxRouterVerticleOptions);
-        Future<String> deployProxyServerFuture = getVertx().deployVerticle(ProxyServerVerticle.class, new DeploymentOptions()
-                .setInstances(vertxRouterVerticleOptions.getProxyServerInstanceNumber()));
+        Future<String> deployProxyServerFuture = getVertx().deployVerticle(ProxyServerVerticle.class, new DeploymentOptions());
 
         deployProxyServerFuture.compose(unused -> getVertx().deployVerticle(ListenerServerVerticle.class, new DeploymentOptions()
                         .setInstances(vertxRouterVerticleOptions.getListenerServerInstanceNumber())))
