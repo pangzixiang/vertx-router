@@ -16,9 +16,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: github
-          server-username: ${{ secrets.service_username }}
-          server-password: ${{ secrets.service_password }}
 
       - name: Release Maven package
         uses: samuelmeuli/action-maven-publish@v1
