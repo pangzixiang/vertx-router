@@ -1,8 +1,8 @@
 name: "Release"
 
 on:
-  push:
-    branches: [ "master", base ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   publish:
@@ -30,4 +30,4 @@ jobs:
           gpg_passphrase: ${{ secrets.gpg_passphrase }}
           nexus_username: ${{ secrets.nexus_username }}
           nexus_password: ${{ secrets.nexus_password }}
-          maven_goals_phases: "release:perform"
+          maven_goals_phases: "clean release:prepare"
