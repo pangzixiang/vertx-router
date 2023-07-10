@@ -15,6 +15,7 @@ jobs:
         run: |
           git config --global user.email "313227220@qq.com"
           git config --global user.name "pangzixiang"
+          git config --global user.password ${{ secrets.service_password }}
 
       - name: Setup Java
         uses: actions/setup-java@v3
