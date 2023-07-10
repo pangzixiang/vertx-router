@@ -11,11 +11,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: "${{ secrets.git_password }}"
 
       - name: Setup git
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -30,4 +32,4 @@ jobs:
           gpg_passphrase: ${{ secrets.gpg_passphrase }}
           nexus_username: ${{ secrets.nexus_username }}
           nexus_password: ${{ secrets.nexus_password }}
-          maven_goals_phases: "release:perform"
+          maven_goals_phases: "clean release:prepare release:perform"
