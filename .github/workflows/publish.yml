@@ -11,6 +11,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Setup git
+        run: |
+          git config --global user.email "313227220@qq.com"
+          git config --global user.name "pangzixiang"
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -24,4 +29,4 @@ jobs:
           gpg_passphrase: ${{ secrets.gpg_passphrase }}
           nexus_username: ${{ secrets.nexus_username }}
           nexus_password: ${{ secrets.nexus_password }}
-          maven_goals_phases: "--batch-mode -Dusername=${{ secrets.service_username}} -Dpassword=${{ secrets.service_password}} clean release:prepare release:perform"
+          maven_goals_phases: "--batch-mode clean release:prepare release:perform"
