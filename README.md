@@ -15,17 +15,19 @@ public class Main {
         Vertx vertx = Vertx.vertx();
         SelfSignedCertificate selfSignedCertificate = SelfSignedCertificate.create();
         HttpServerOptions sslOptions = new HttpServerOptions().setSsl(true).setKeyCertOptions(selfSignedCertificate.keyCertOptions()).setTrustOptions(selfSignedCertificate.trustOptions());
-        vertx.deployVerticle(new VertxRouterVerticle(VertxRouterVerticleOptions.builder()
-                .proxyServerPort(8080)
-                .listenerServerPort(9090)
-                .proxyServerInstanceNumber(4)
-                .listenerServerOptions(sslOptions)
-                .proxyServerOptions(sslOptions)
-                .proxyHttpClientOptions(new HttpClientOptions().setSsl(true).setTrustAll(true))
-                .listenerServerInstanceNumber(4)
-                .enableBasicAuthentication(true)
-                .basicAuthenticationUsername("vertx-router")
-                .basicAuthenticationPassword("vertx-router-pwd").build()));
+        VertxRouterVerticleOptions vertxRouterVerticleOptions = new VertxRouterVerticleOptions()
+                .setProxyServerPort(8080)
+                .setListenerServerPort(9090)
+                .setProxyServerInstanceNumber(4)
+                .setListenerServerOptions(sslOptions)
+                .setProxyServerOptions(sslOptions)
+                .setListenerServerInstanceNumber(4)
+                .setProxyHttpClientOptions(new HttpClientOptions().setSsl(true).setTrustAll(true))
+                .setEnableBasicAuthentication(true)
+                .setLoadBalanceAlgorithm(new LeastConnection())
+                .setBasicAuthenticationUsername("vertx-router")
+                .setBasicAuthenticationPassword("vertx-router-pwd");
+        vertx.deployVerticle(new VertxRouterVerticle(vertxRouterVerticleOptions));
     }
 }
 ```

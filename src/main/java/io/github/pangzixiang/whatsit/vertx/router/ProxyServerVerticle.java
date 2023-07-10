@@ -2,11 +2,8 @@ package io.github.pangzixiang.whatsit.vertx.router;
 
 import io.github.pangzixiang.whatsit.vertx.router.algorithm.LoadBalanceAlgorithm;
 import io.github.pangzixiang.whatsit.vertx.router.exception.TargetServerNotFoundException;
-import io.github.pangzixiang.whatsit.vertx.router.model.ProxyEvent;
-import io.github.pangzixiang.whatsit.vertx.router.model.ProxyEventCodec;
 import io.github.pangzixiang.whatsit.vertx.router.model.TargetService;
 import io.github.pangzixiang.whatsit.vertx.router.options.VertxRouterVerticleOptions;
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.*;
@@ -18,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import static io.github.pangzixiang.whatsit.vertx.router.ProxyCustomHeaders.*;
 import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.*;
@@ -28,8 +26,6 @@ public class ProxyServerVerticle extends BaseVerticle {
     public void start(Promise<Void> startPromise) throws Exception {
         VertxRouterVerticleOptions vertxRouterVerticleOptions = (VertxRouterVerticleOptions)
                 getVertx().sharedData().getLocalMap(VERTX_ROUTER_SHARE_MAP_NAME).get(VERTX_ROUTER_OPTIONS_KEY_NAME);
-        getVertx().eventBus().registerDefaultCodec(ProxyEvent.class, new ProxyEventCodec());
-        getVertx().deployVerticle(ProxyRequestHandleWorkerVerticle.class, new DeploymentOptions().setInstances(vertxRouterVerticleOptions.getProxyServerInstanceNumber())).onSuccess(unused -> {
             HttpServer proxyServer = getVertx().createHttpServer(vertxRouterVerticleOptions.getProxyServerOptions());
 
             Router proxyRouter = createRouter(vertxRouterVerticleOptions);
@@ -46,7 +42,7 @@ public class ProxyServerVerticle extends BaseVerticle {
             }
             httpProxy.originSelector(httpServerRequest -> {
                 String serviceName = httpServerRequest.params().get("serviceName");
-                TargetService targetService = (TargetService) vertx.sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
+                TargetService targetService = (TargetService) getVertx().sharedData().getLocalMap(CONNECTION_MAP).get(serviceName);
                 if (targetService == null) {
                     log.info("target service [{}] not found for URI [{} {}]", serviceName, httpServerRequest.method(), httpServerRequest.uri());
                     return Future.failedFuture(new TargetServerNotFoundException(serviceName));
@@ -69,8 +65,32 @@ public class ProxyServerVerticle extends BaseVerticle {
             httpProxy.addInterceptor(new ProxyInterceptor() {
                 @Override
                 public Future<ProxyResponse> handleProxyRequest(ProxyContext context) {
-                    return getVertx().eventBus().request(ProxyRequestHandleWorkerVerticle.EVENT_BUS_ID, ProxyEvent.builder().proxyContext(context).build())
-                            .map(message -> ((ProxyEvent) message.body()).getProxyResponse());
+                    return getVertx().executeBlocking(promise -> {
+                        long startTime = System.currentTimeMillis();
+                        context.set("startTime", startTime);
+                        String handleId = UUID.randomUUID().toString();
+                        context.set(PROXY_HEADERS_X_HANDLE_ID, handleId);
+                        ProxyRequest proxyRequest = context.request();
+                        HttpServerRequest proxiedRequest = proxyRequest.proxiedRequest();
+                        String proxyServerHost = "%s:%s".formatted(proxiedRequest.localAddress().host(), proxiedRequest.localAddress().port());
+                        context.set(PROXY_HEADERS_X_PROXY_SERVER_HOST, proxyServerHost);
+                        proxiedRequest.headers().add(PROXY_HEADERS_X_HANDLE_ID, handleId);
+                        proxyRequest.putHeader(PROXY_HEADERS_X_HANDLE_ID, handleId);
+                        proxyRequest.putHeader(PROXY_HEADERS_X_PROXY_SERVER_HOST, proxyServerHost);
+                        log.info("Start to proxy request [{} {}] from [{}] (instance={})(handleId={})",
+                                proxyRequest.getMethod(), proxyRequest.getURI(), proxyRequest.proxiedRequest().host(), hashCode(), handleId);
+                        context.sendRequest().onSuccess(proxyResponse -> {
+                            String originServer = proxyResponse.request().proxiedRequest().getHeader(PROXY_HEADERS_X_ORIGIN_SERVER_HOST);
+                            context.set(PROXY_HEADERS_X_ORIGIN_SERVER_HOST, originServer);
+                            log.info("Succeeded to receive response [{} {}] from origin server [{}] for proxy request [{} {}] (instance={})(handleId={})",
+                                    proxyResponse.getStatusCode(), proxyResponse.getStatusMessage(), originServer, proxyRequest.getMethod(), proxyRequest.getURI(), hashCode(), handleId);
+                            promise.complete(proxyResponse);
+                        }).onFailure(throwable -> {
+                            log.error("Failed to receive response from origin server for proxy request [{} {}] (instance={})(handleId={})",
+                                    proxyRequest.getMethod(), proxyRequest.getURI(), hashCode(), handleId, throwable);
+                            promise.fail(throwable);
+                        });
+                    });
                 }
 
                 @Override
@@ -100,9 +120,8 @@ public class ProxyServerVerticle extends BaseVerticle {
 
             Future<HttpServer> proxyServerFuture = proxyServer.listen(vertxRouterVerticleOptions.getProxyServerPort());
             proxyServerFuture.onSuccess(httpServer -> {
-                log.info("Vertx Router Proxy Server started at port {}", httpServer.actualPort());
+                log.info("Vertx Router Proxy Server started at port {} (instance={})", httpServer.actualPort(), hashCode());
                 startPromise.complete();
             }).onFailure(startPromise::fail);
-        }).onFailure(startPromise::fail);
     }
 }
