@@ -24,4 +24,4 @@ jobs:
           gpg_passphrase: ${{ secrets.gpg_passphrase }}
           nexus_username: ${{ secrets.nexus_username }}
           nexus_password: ${{ secrets.nexus_password }}
-          maven_goals_phases: "--batch-mode -Dusername=${{ secrets.server_username}} -Dpassword=${{ secrets.server_password}} clean release:prepare release:perform"
+          maven_goals_phases: "--batch-mode -Dusername=${{ secrets.service_username}} -Dpassword=${{ secrets.service_password}} clean release:prepare release:perform"
