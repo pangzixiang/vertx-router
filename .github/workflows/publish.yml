@@ -1,8 +1,11 @@
 name: "Release"
 
 on:
-  push:
-    branches: [ "master", base ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "master" ]
+    types:
+      - "closed"
 
 jobs:
   publish:
