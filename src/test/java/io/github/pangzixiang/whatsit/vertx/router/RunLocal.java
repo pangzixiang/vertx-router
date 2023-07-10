@@ -17,18 +17,19 @@ public class RunLocal {
         Vertx vertx = Vertx.vertx();
         SelfSignedCertificate selfSignedCertificate = SelfSignedCertificate.create();
         HttpServerOptions sslOptions = new HttpServerOptions().setSsl(true).setKeyCertOptions(selfSignedCertificate.keyCertOptions()).setTrustOptions(selfSignedCertificate.trustOptions());
-        vertx.deployVerticle(new VertxRouterVerticle(VertxRouterVerticleOptions.builder()
-                .proxyServerPort(8080)
-                .listenerServerPort(9090)
-                .proxyServerInstanceNumber(4)
-                .listenerServerOptions(sslOptions)
-                .proxyServerOptions(sslOptions)
-                .proxyHttpClientOptions(new HttpClientOptions().setSsl(true).setTrustAll(true))
-                .listenerServerInstanceNumber(4)
-                .enableBasicAuthentication(true)
-                .loadBalanceAlgorithm(new LeastConnection())
-                .basicAuthenticationUsername("vertx-router")
-                .basicAuthenticationPassword("vertx-router-pwd").build())).onSuccess(unused -> {
+        VertxRouterVerticleOptions vertxRouterVerticleOptions = new VertxRouterVerticleOptions()
+                .setProxyServerPort(8080)
+                .setListenerServerPort(9090)
+                .setProxyServerInstanceNumber(4)
+                .setListenerServerOptions(sslOptions)
+                .setProxyServerOptions(sslOptions)
+                .setListenerServerInstanceNumber(4)
+                .setProxyHttpClientOptions(new HttpClientOptions().setSsl(true).setTrustAll(true))
+                .setEnableBasicAuthentication(true)
+                .setLoadBalanceAlgorithm(new LeastConnection())
+                .setBasicAuthenticationUsername("vertx-router")
+                .setBasicAuthenticationPassword("vertx-router-pwd");
+        vertx.deployVerticle(new VertxRouterVerticle(vertxRouterVerticleOptions)).onSuccess(unused -> {
             Router router1 = Router.router(vertx);
             router1.route().handler(BodyHandler.create());
             router1.route().handler(routingContext -> {
@@ -52,8 +53,11 @@ public class RunLocal {
                 log.info("target service 2 received request from {}, headers={}", routingContext.normalizedPath(), routingContext.request().headers());
                 routingContext.next();
             });
-            router2.route(HttpMethod.POST,"/test-service/test1").handler(routingContext -> {
+            router2.route(HttpMethod.POST, "/test-service/test1").handler(routingContext -> {
                 routingContext.response().end(routingContext.body().asString());
+            });
+            router2.route("/test-service/test").handler(routingContext -> {
+                routingContext.response().end("done");
             });
             Future<HttpServer> httpServerFuture2 = vertx.createHttpServer(sslOptions)
                     .requestHandler(router2)
@@ -85,7 +89,7 @@ public class RunLocal {
                         });
 
 
-                        HttpClient httpClient2= vertx.createHttpClient(options);
+                        HttpClient httpClient2 = vertx.createHttpClient(options);
                         WebSocketConnectOptions webSocketConnectOptions2 = new WebSocketConnectOptions();
                         webSocketConnectOptions2.setHost("localhost");
                         webSocketConnectOptions2.setPort(9090);

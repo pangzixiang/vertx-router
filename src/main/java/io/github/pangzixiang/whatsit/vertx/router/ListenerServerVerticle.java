@@ -22,7 +22,6 @@ import static io.github.pangzixiang.whatsit.vertx.router.VertxRouterVerticle.VER
 
 @Slf4j
 public class ListenerServerVerticle extends BaseVerticle {
-    private final String instanceId = UUID.randomUUID().toString();
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         VertxRouterVerticleOptions vertxRouterVerticleOptions = (VertxRouterVerticleOptions)
@@ -43,7 +42,7 @@ public class ListenerServerVerticle extends BaseVerticle {
             vertxRouterVerticleOptions.getCustomAuthenticationHandlers().forEach(registerRoute::handler);
         }
 
-        registerRoute.handler(new ListenerWebsocketHandler(getVertx(), instanceId));
+        registerRoute.handler(new ListenerWebsocketHandler(getVertx(), String.valueOf(hashCode())));
 
         listenerRouter.errorHandler(HttpResponseStatus.UNAUTHORIZED.code(), routingContext -> {
             routingContext.response().setStatusCode(HttpResponseStatus.UNAUTHORIZED.code()).end();
@@ -61,7 +60,7 @@ public class ListenerServerVerticle extends BaseVerticle {
         listenerServer.requestHandler(listenerRouter);
         Future<HttpServer> listenerServerFuture = listenerServer.listen(vertxRouterVerticleOptions.getListenerServerPort());
         listenerServerFuture.onSuccess(httpServer -> {
-            log.info("Vertx Router Listener Server started at port {} (instance={})", httpServer.actualPort(), instanceId);
+            log.info("Vertx Router Listener Server started at port {} (instance={})", httpServer.actualPort(), hashCode());
             startPromise.complete();
         }).onFailure(startPromise::fail);
     }
