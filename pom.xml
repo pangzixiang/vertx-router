@@ -8,7 +8,7 @@
     <artifactId>vertx-router</artifactId>
     <name>vertx-router</name>
     <description>Microservice router for Vert.x</description>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <url>https://github.com/pangzixiang/vertx-router</url>
 
     <developers>
@@ -171,14 +171,14 @@
                 <version>${maven-surefire-plugin.version}</version>
             </plugin>
 
-            <plugin>
-                <groupId>com.github.danielflower.mavenplugins</groupId>
-                <artifactId>multi-module-maven-release-plugin</artifactId>
-                <version>3.6.4</version>
-                <configuration>
-                    <serverId>github</serverId>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>com.github.danielflower.mavenplugins</groupId>-->
+<!--                <artifactId>multi-module-maven-release-plugin</artifactId>-->
+<!--                <version>3.6.4</version>-->
+<!--                <configuration>-->
+<!--                    <serverId>github</serverId>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
