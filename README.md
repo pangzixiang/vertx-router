@@ -9,7 +9,7 @@
     <version>{latestVersion}</version>
 </dependency>
 ```
-- deploy the Verticle VertxRouterVerticle
+- deploy the Verticle 'VertxRouterVerticle'
 ```java
 public class Main {
     public static void main(String[] args) {
