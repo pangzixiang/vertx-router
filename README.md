@@ -6,7 +6,7 @@
 <dependency>
     <groupId>io.github.pangzixiang.whatsit</groupId>
     <artifactId>vertx-router</artifactId>
-    <version>{version}</version>
+    <version>{latestVersion}</version>
 </dependency>
 ```
 - deploy the Verticle VertxRouterVerticle
