@@ -1,4 +1,5 @@
 # Vertx Router
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.pangzixiang.whatsit/vertx-router?logo=apachemaven&logoColor=red)](https://search.maven.org/artifact/io.github.pangzixiang.whatsit/vertx-router)
 #### how to use
 - import the dependency
 ```xml
