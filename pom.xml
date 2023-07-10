@@ -175,9 +175,9 @@
                 <groupId>com.github.danielflower.mavenplugins</groupId>
                 <artifactId>multi-module-maven-release-plugin</artifactId>
                 <version>3.6.4</version>
-                <configuration>
-                    <serverId>github</serverId>
-                </configuration>
+<!--                <configuration>-->
+<!--                    <serverId>github</serverId>-->
+<!--                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
