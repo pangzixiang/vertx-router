@@ -6,7 +6,7 @@
     <artifactId>vertx-router</artifactId>
     <name>vertx-router</name>
     <description>Microservice router for Vert.x</description>
-    <version>1.2.7-SNAPSHOT</version>
+    <version>1.2.7</version>
     <url>https://github.com/pangzixiang/vertx-router</url>
 
     <developers>
@@ -245,6 +245,6 @@
         <url>https://github.com/pangzixiang/vertx-router.git</url>
         <developerConnection>scm:git:https://github.com/pangzixiang/vertx-router</developerConnection>
         <connection>scm:git:https://github.com/pangzixiang/vertx-router</connection>
-      <tag>HEAD</tag>
+      <tag>vertx-router-1.2.7</tag>
   </scm>
 </project>
