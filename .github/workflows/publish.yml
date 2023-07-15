@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
+          token: "${{ secrets.git_password }}"
 
       - name: Setup git
         run: |
@@ -41,7 +41,7 @@ jobs:
       - name: Create Release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.git_password }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
