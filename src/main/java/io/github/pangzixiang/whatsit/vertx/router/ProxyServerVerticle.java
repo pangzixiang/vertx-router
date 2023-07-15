@@ -65,31 +65,27 @@ public class ProxyServerVerticle extends BaseVerticle {
             httpProxy.addInterceptor(new ProxyInterceptor() {
                 @Override
                 public Future<ProxyResponse> handleProxyRequest(ProxyContext context) {
-                    return getVertx().executeBlocking(promise -> {
-                        long startTime = System.currentTimeMillis();
-                        context.set("startTime", startTime);
-                        String handleId = UUID.randomUUID().toString();
-                        context.set(PROXY_HEADERS_X_HANDLE_ID, handleId);
-                        ProxyRequest proxyRequest = context.request();
-                        HttpServerRequest proxiedRequest = proxyRequest.proxiedRequest();
-                        String proxyServerHost = "%s:%s".formatted(proxiedRequest.localAddress().host(), proxiedRequest.localAddress().port());
-                        context.set(PROXY_HEADERS_X_PROXY_SERVER_HOST, proxyServerHost);
-                        proxiedRequest.headers().add(PROXY_HEADERS_X_HANDLE_ID, handleId);
-                        proxyRequest.putHeader(PROXY_HEADERS_X_HANDLE_ID, handleId);
-                        proxyRequest.putHeader(PROXY_HEADERS_X_PROXY_SERVER_HOST, proxyServerHost);
-                        log.info("Start to proxy request [{} {}] from [{}] (instance={})(handleId={})",
-                                proxyRequest.getMethod(), proxyRequest.getURI(), proxyRequest.proxiedRequest().host(), hashCode(), handleId);
-                        context.sendRequest().onSuccess(proxyResponse -> {
-                            String originServer = proxyResponse.request().proxiedRequest().getHeader(PROXY_HEADERS_X_ORIGIN_SERVER_HOST);
-                            context.set(PROXY_HEADERS_X_ORIGIN_SERVER_HOST, originServer);
-                            log.info("Succeeded to receive response [{} {}] from origin server [{}] for proxy request [{} {}] (instance={})(handleId={})",
-                                    proxyResponse.getStatusCode(), proxyResponse.getStatusMessage(), originServer, proxyRequest.getMethod(), proxyRequest.getURI(), hashCode(), handleId);
-                            promise.complete(proxyResponse);
-                        }).onFailure(throwable -> {
-                            log.error("Failed to receive response from origin server for proxy request [{} {}] (instance={})(handleId={})",
-                                    proxyRequest.getMethod(), proxyRequest.getURI(), hashCode(), handleId, throwable);
-                            promise.fail(throwable);
-                        });
+                    ProxyRequest proxyRequest = context.request();
+                    long startTime = System.currentTimeMillis();
+                    context.set("startTime", startTime);
+                    String handleId = UUID.randomUUID().toString();
+                    context.set(PROXY_HEADERS_X_HANDLE_ID, handleId);
+                    HttpServerRequest proxiedRequest = proxyRequest.proxiedRequest();
+                    String proxyServerHost = "%s:%s".formatted(proxiedRequest.localAddress().host(), proxiedRequest.localAddress().port());
+                    context.set(PROXY_HEADERS_X_PROXY_SERVER_HOST, proxyServerHost);
+                    proxiedRequest.headers().add(PROXY_HEADERS_X_HANDLE_ID, handleId);
+                    proxyRequest.putHeader(PROXY_HEADERS_X_HANDLE_ID, handleId);
+                    proxyRequest.putHeader(PROXY_HEADERS_X_PROXY_SERVER_HOST, proxyServerHost);
+                    log.info("Start to proxy request [{} {}] from [{}] (instance={})(handleId={})",
+                            proxyRequest.getMethod(), proxyRequest.getURI(), proxyRequest.proxiedRequest().host(), hashCode(), handleId);
+                    return context.sendRequest().onSuccess(proxyResponse -> {
+                        String originServer = proxyResponse.request().proxiedRequest().getHeader(PROXY_HEADERS_X_ORIGIN_SERVER_HOST);
+                        context.set(PROXY_HEADERS_X_ORIGIN_SERVER_HOST, originServer);
+                        log.info("Succeeded to receive response [{} {}] from origin server [{}] for proxy request [{} {}] (instance={})(handleId={})",
+                                proxyResponse.getStatusCode(), proxyResponse.getStatusMessage(), originServer, proxyRequest.getMethod(), proxyRequest.getURI(), hashCode(), handleId);
+                    }).onFailure(throwable -> {
+                        log.error("Failed to receive response from origin server for proxy request [{} {}] (instance={})(handleId={})",
+                                proxyRequest.getMethod(), proxyRequest.getURI(), hashCode(), handleId, throwable);
                     });
                 }
 
