@@ -110,7 +110,7 @@ public class ProxyServerVerticle extends BaseVerticle {
 
             ProxyHandler proxyHandler = ProxyHandler.create(httpProxy);
 
-            proxyRouter.route("/:serviceName/*").handler(proxyHandler);
+            proxyRouter.route("/:serviceName*").handler(proxyHandler);
 
             proxyServer.requestHandler(proxyRouter);
 

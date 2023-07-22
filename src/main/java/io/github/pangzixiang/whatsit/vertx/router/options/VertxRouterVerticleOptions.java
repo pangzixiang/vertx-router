@@ -12,7 +12,6 @@ import lombok.Getter;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @Getter
 public class VertxRouterVerticleOptions implements Shareable {
@@ -46,10 +45,10 @@ public class VertxRouterVerticleOptions implements Shareable {
         listenerServerInstanceNumber = 2;
         loadBalanceAlgorithm = new RoundRobin();
         allowCORS = true;
-        proxyHttpClientOptions = new HttpClientOptions()
-                .setReadIdleTimeout(10)
-                .setWriteIdleTimeout(10)
-                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(10));
+        proxyHttpClientOptions = new HttpClientOptions();
+//                .setReadIdleTimeout(10)
+//                .setWriteIdleTimeout(10)
+//                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(10));
     }
 
     public VertxRouterVerticleOptions setRegisterPath(String registerPath) {
