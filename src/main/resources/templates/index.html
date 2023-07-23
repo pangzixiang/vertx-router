@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Connectors Info</title>
+</head>
+<body>
+<div>
+    <h1>Connectors</h1>
+    <ul th:each="service : ${services}">
+        <li><a th:text="${service}" th:href="${'/' + service}"></a></li>
+    </ul>
+</div>
+</body>
+</html>

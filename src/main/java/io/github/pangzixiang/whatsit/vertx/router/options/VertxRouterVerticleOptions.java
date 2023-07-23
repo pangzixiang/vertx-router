@@ -32,6 +32,7 @@ public class VertxRouterVerticleOptions implements Shareable {
     private boolean allowCORS;
     private Set<String> allowCORSHeaders;
     private Set<HttpMethod> allowCORSMethods;
+    private boolean connectorsInfoPageEnable;
 
     public VertxRouterVerticleOptions() {
         registerPath = "/register";
@@ -49,6 +50,7 @@ public class VertxRouterVerticleOptions implements Shareable {
 //                .setReadIdleTimeout(10)
 //                .setWriteIdleTimeout(10)
 //                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(10));
+        connectorsInfoPageEnable = true;
     }
 
     public VertxRouterVerticleOptions setRegisterPath(String registerPath) {
@@ -133,6 +135,11 @@ public class VertxRouterVerticleOptions implements Shareable {
 
     public VertxRouterVerticleOptions setAllowCORSMethods(Set<HttpMethod> allowCORSMethods) {
         this.allowCORSMethods = allowCORSMethods;
+        return this;
+    }
+
+    public VertxRouterVerticleOptions setConnectorsInfoPageEnable(boolean enable) {
+        this.connectorsInfoPageEnable = enable;
         return this;
     }
 }
